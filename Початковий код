@@ -1,0 +1,169 @@
+import sqlite3
+
+
+# 1. Створення бази даних SQLite та схеми
+connection = sqlite3.connect("homework_database.db")  # Підключення до бази даних
+cursor = connection.cursor()
+
+
+# Видалення таблиць, якщо вони вже існують
+cursor.execute("DROP TABLE IF EXISTS Customer;")
+cursor.execute("DROP TABLE IF EXISTS Category;")
+cursor.execute("DROP TABLE IF EXISTS Product;")
+cursor.execute("DROP TABLE IF EXISTS 'Order';")
+cursor.execute("DROP TABLE IF EXISTS Order_Product;")
+
+# Створення таблиць
+cursor.execute("""
+CREATE TABLE Customer (
+   customer_id INTEGER PRIMARY KEY,
+   first_name TEXT,
+   last_name TEXT,
+   email TEXT UNIQUE,
+   phone_number TEXT,
+   address TEXT
+);
+""")
+cursor.execute("""
+CREATE TABLE Category (
+   category_id INTEGER PRIMARY KEY,
+   name TEXT,
+   description TEXT
+);
+""")
+cursor.execute("""
+CREATE TABLE Product (
+   product_id INTEGER PRIMARY KEY,
+   name TEXT,
+   category_id INTEGER,
+   price REAL,
+   stock_quantity INTEGER,
+   new_column INTEGER,
+   description TEXT,
+   created_at TIMESTAMP,
+   FOREIGN KEY (category_id) REFERENCES Category (category_id)
+);
+""")
+cursor.execute("""
+CREATE TABLE "Order" (
+   order_id INTEGER PRIMARY KEY,
+   customer_id INTEGER,
+   order_date TIMESTAMP,
+   total_price REAL,
+   status TEXT,
+   FOREIGN KEY (customer_id) REFERENCES Customer (customer_id)
+);
+""")
+cursor.execute("""
+CREATE TABLE Order_Product (
+   order_product_id INTEGER PRIMARY KEY,
+   order_id INTEGER,
+   product_id INTEGER,
+   quantity INTEGER,
+   new_column INTEGER,
+   price REAL,
+   FOREIGN KEY (order_id) REFERENCES "Order" (order_id),
+   FOREIGN KEY (product_id) REFERENCES Product (product_id)
+);
+""")
+
+
+# 2. Вставка даних
+customers = [
+   (1, "Олександр", "Коваленко", "oleksandr.kovalenko@gmail.com", "+380631234567", "вул. Шевченка, 10"),
+   (2, "Марія", "Іванова", "mariya.ivanova@gmail.com", "+380672345678", "вул. Лесі Українки, 15"),
+   (3, "Олег", "Гончаренко", "oleh.goncharenko@gmail.com", "+380503456789", "вул. Хрещатик, 5"),
+   (4, "Світлана", "Петренко", "svitlana.petrenko@gmail.com", "+380932345890", "вул. Франка, 22"),
+   (5, "Андрій", "Мельник", "andriy.melnyk@gmail.com", "+380982467123", "вул. Грушевського, 3")
+]
+
+
+categories = [
+   (1, "Електроніка", "Пристрої та гаджети"),
+   (2, "Книги", "Друковані та цифрові книги"),
+   (3, "Одяг", "Чоловічий, жіночий та дитячий одяг"),
+   (4, "Їжа", "Продукти харчування та напої")
+]
+
+
+products = [
+   (1, "Ноутбук", 1, 24999.99, 8, None, "Потужний ноутбук для роботи та ігор", "2024-11-01 10:00:00"),
+   (2, "Смартфон", 1, 19999.99, 15, None, "Сучасний смартфон з відмінною камерою", "2024-11-01 11:00:00"),
+   (3, "Електронна книга", 1, 4999.99, 25, None, "Компактний пристрій для читання", "2024-11-01 12:00:00"),
+   (4, "Книга 'Мистецтво війни'", 2, 399.99, 50, None, "Класичний твір стратегії та філософії", "2024-11-01 12:00:00"),
+   (5, "Кулінарна книга", 2, 299.99, 30, None, "Рецепти відомих шеф-кухарів", "2024-11-02 09:00:00"),
+   (6, "Футболка", 3, 499.99, 100, None, "Чорна футболка з принтом", "2024-11-02 10:00:00"),
+   (7, "Джинси", 3, 1499.99, 40, None, "Класичні сині джинси", "2024-11-02 11:00:00"),
+   (8, "Шоколад", 4, 49.99, 200, None, "Молочний шоколад 100 г", "2024-11-02 12:00:00"),
+   (9, "Кава", 4, 249.99, 80, None, "Мелена кава 500 г", "2024-11-02 13:00:00")
+]
+
+
+orders = [
+   (1, 1, "2024-11-15 14:30:00", 25049.98, "виконано"),
+   (2, 2, "2024-11-16 16:00:00", 4299.98, "очікує"),
+   (3, 3, "2024-11-17 12:00:00", 349.99, "виконано"),
+   (4, 4, "2024-11-18 09:00:00", 1999.98, "виконано"),
+   (5, 5, "2024-11-19 15:45:00", 5999.96, "очікує")
+]
+
+
+order_products = [
+   (1, 1, 1, 1, None, 24999.99),  # Ноутбук
+   (2, 1, 8, 1, None, 49.99),  # Шоколад
+   (3, 2, 3, 1, None, 4999.99),  # Електронна книга
+   (4, 2, 9, 1, None, 249.99),  # Кава
+   (5, 3, 4, 1, None, 399.99),  # Книга "Мистецтво війни"
+   (6, 4, 6, 2, None, 999.98),  # Футболки
+   (7, 4, 7, 1, None, 1499.99),  # Джинси
+   (8, 5, 2, 1, None, 19999.99),  # Смартфон
+   (9, 5, 5, 2, None, 599.98)  # Кулінарна книга
+]
+
+# Вставка даних у таблиці
+cursor.executemany("INSERT INTO Customer VALUES (?, ?, ?, ?, ?, ?);", customers)
+cursor.executemany("INSERT INTO Category VALUES (?, ?, ?);", categories)
+cursor.executemany("INSERT INTO Product VALUES (?, ?, ?, ?, ?, ?, ?, ?);", products)
+cursor.executemany("INSERT INTO 'Order' VALUES (?, ?, ?, ?, ?);", orders)
+cursor.executemany("INSERT INTO Order_Product VALUES (?, ?, ?, ?, ?, ?);", order_products)
+connection.commit()
+
+
+# 3. Виконання SELECT запитів
+cursor.execute("SELECT name FROM Product ORDER BY name DESC;")
+query1_result = cursor.fetchall()  # Результат запиту 1
+
+cursor.execute("SELECT name FROM Product WHERE price > 50;")
+query2_result = cursor.fetchall()  # Результат запиту 2
+
+cursor.execute("SELECT name FROM Product WHERE LENGTH(name) > 5;")
+query3_result = cursor.fetchall()  # Результат запиту 3
+
+# Виведення результатів
+print("Результат запиту 1:", query1_result)
+print("Результат запиту 2:", query2_result)
+print("Результат запиту 3:", query3_result)
+
+
+# 4. Оновлення записів
+cursor.execute("UPDATE Product SET price = price + 10 WHERE price > 50;")
+connection.commit()  # Збереження змін
+
+# Перезапуск SELECT запитів для перевірки змін
+cursor.execute("SELECT name FROM Product ORDER BY name DESC;")
+query1_result_updated = cursor.fetchall()  # Оновлений результат запиту 1
+
+cursor.execute("SELECT name FROM Product WHERE price > 50;")
+query2_result_updated = cursor.fetchall()  # Оновлений результат запиту 2
+
+cursor.execute("SELECT name FROM Product WHERE LENGTH(name) > 5;")
+query3_result_updated = cursor.fetchall()  # Оновлений результат запиту 3
+
+# Виведення оновлених результатів
+print("Оновлений результат запиту 1:", query1_result_updated)
+print("Оновлений результат запиту 2:", query2_result_updated)
+print("Оновлений результат запиту 3:", query3_result_updated)
+
+
+# Закриття з'єднання з базою даних
+connection.close()

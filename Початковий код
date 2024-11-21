@@ -144,26 +144,5 @@ print("Результат запиту 1:", query1_result)
 print("Результат запиту 2:", query2_result)
 print("Результат запиту 3:", query3_result)
 
-
-# 4. Оновлення записів
-cursor.execute("UPDATE Product SET price = price + 10 WHERE price > 50;")
-connection.commit()  # Збереження змін
-
-# Перезапуск SELECT запитів для перевірки змін
-cursor.execute("SELECT name FROM Product ORDER BY name DESC;")
-query1_result_updated = cursor.fetchall()  # Оновлений результат запиту 1
-
-cursor.execute("SELECT name FROM Product WHERE price > 50;")
-query2_result_updated = cursor.fetchall()  # Оновлений результат запиту 2
-
-cursor.execute("SELECT name FROM Product WHERE LENGTH(name) > 5;")
-query3_result_updated = cursor.fetchall()  # Оновлений результат запиту 3
-
-# Виведення оновлених результатів
-print("Оновлений результат запиту 1:", query1_result_updated)
-print("Оновлений результат запиту 2:", query2_result_updated)
-print("Оновлений результат запиту 3:", query3_result_updated)
-
-
 # Закриття з'єднання з базою даних
 connection.close()
